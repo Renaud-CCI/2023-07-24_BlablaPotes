@@ -2,13 +2,24 @@
 
 namespace App\Entity;
 
+
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
 use App\Controller\TripCreateController;
+use App\Controller\TripCollectionController;
+use App\Controller\TripPatchController;
 use App\Repository\TripRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\AuthenticatedVoter;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+
+
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
 #[ApiResource(
@@ -17,8 +28,17 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
             uriTemplate: '/trips/new',
             controller: TripCreateController::class
         ),
+        new GetCollection(
+            // uriTemplate: '/trips/all',
+            controller: TripCollectionController::class
+        ),
+        new Get(),
+        new Patch(
+            uriTemplate: '/trips/modify/{id}',
+            controller: TripPatchController::class
+        ),
     ],
-    security: "is_granted('ROLE_USER')",
+    // security: "is_granted('ROLE_USER')",
     normalizationContext: ['groups' => ['trip:read']],
     denormalizationContext: ['groups' => ['trip:write']],
     
@@ -47,12 +67,15 @@ class Trip
     private ?int $availablePlaces = null;
 
     #[ORM\Column]
-    #[Groups(['user:read', 'trip:write'])]
+    #[Groups(['user:read', 'trip:write', 'trip:read'])]
     private ?int $price = null;
 
     #[ORM\ManyToOne(inversedBy: 'trip')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['trip:read'])]
     private ?User $user = null;
+
+
 
   
 
