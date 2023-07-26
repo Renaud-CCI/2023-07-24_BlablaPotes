@@ -1,0 +1,12 @@
+api_platform:
+  swagger:
+    api_keys:
+      JWT:
+        name: Authorization
+        type: header
+
+# resources:
+#   App\Entity\User:
+#     operations:
+#       ApiPlatform\Metadata\GetCollection: ~
+  

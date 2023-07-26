@@ -2,10 +2,27 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Post;
+use App\Controller\TripCreateController;
 use App\Repository\TripRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
+#[ApiResource(
+    operations: [
+        new Post(
+            uriTemplate: '/trips/new',
+            controller: TripCreateController::class
+        ),
+    ],
+    security: "is_granted('ROLE_USER')",
+    normalizationContext: ['groups' => ['trip:read']],
+    denormalizationContext: ['groups' => ['trip:write']],
+    
+)]
 class Trip
 {
     #[ORM\Id]
@@ -14,23 +31,30 @@ class Trip
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $starting_point = null;
+    #[Groups(['user:read','trip:write','trip:read'])]
+    private ?string $startingPoint = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $ending_point = null;
+    #[Groups(['user:read', 'trip:write','trip:read'])]
+    private ?string $endingPoint = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $starting_at = null;
+    #[Groups(['trip:write','trip:read'])]
+    private ?\DateTimeImmutable $startingAt = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $available_places = null;
+    #[Groups(['user:read', 'trip:write', 'trip:read'])]
+    private ?int $availablePlaces = null;
 
     #[ORM\Column]
+    #[Groups(['user:read', 'trip:write'])]
     private ?int $price = null;
 
-    #[ORM\ManyToOne(inversedBy: 'trips')]
+    #[ORM\ManyToOne(inversedBy: 'trip')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
+
+  
 
     public function getId(): ?int
     {
@@ -39,48 +63,48 @@ class Trip
 
     public function getStartingPoint(): ?string
     {
-        return $this->starting_point;
+        return $this->startingPoint;
     }
 
-    public function setStartingPoint(string $starting_point): static
+    public function setStartingPoint(string $startingPoint): static
     {
-        $this->starting_point = $starting_point;
+        $this->startingPoint = $startingPoint;
 
         return $this;
     }
 
     public function getEndingPoint(): ?string
     {
-        return $this->ending_point;
+        return $this->endingPoint;
     }
 
-    public function setEndingPoint(string $ending_point): static
+    public function setEndingPoint(string $endingPoint): static
     {
-        $this->ending_point = $ending_point;
+        $this->endingPoint = $endingPoint;
 
         return $this;
     }
 
     public function getStartingAt(): ?\DateTimeImmutable
     {
-        return $this->starting_at;
+        return $this->startingAt;
     }
 
-    public function setStartingAt(\DateTimeImmutable $starting_at): static
+    public function setStartingAt(\DateTimeImmutable $startingAt): static
     {
-        $this->starting_at = $starting_at;
+        $this->startingAt = $startingAt;
 
         return $this;
     }
 
     public function getAvailablePlaces(): ?int
     {
-        return $this->available_places;
+        return $this->availablePlaces;
     }
 
-    public function setAvailablePlaces(?int $available_places): static
+    public function setAvailablePlaces(?int $availablePlaces): static
     {
-        $this->available_places = $available_places;
+        $this->availablePlaces = $availablePlaces;
 
         return $this;
     }
@@ -108,4 +132,5 @@ class Trip
 
         return $this;
     }
+
 }
